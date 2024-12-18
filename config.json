@@ -1,0 +1,6 @@
+{
+    "tickers": ["GOOGL", "AAPL", "MSFT", "TSLA", "NFLX"],
+    "lookback_years": 5,
+    "initial_balance": 10000,
+    "n_tests": 1000
+}

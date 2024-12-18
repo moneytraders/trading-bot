@@ -1,0 +1,4 @@
+processed-data
+__pycache__
+.venv
+data
