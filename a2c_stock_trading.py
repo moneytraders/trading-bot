@@ -1,4 +1,6 @@
 from stock_trading_env import StockTradingEnv
+from stable_baselines3 import A2C
+
 import torch.nn.functional as F
 import torch.nn as nn
 import torch
@@ -87,6 +89,8 @@ class AdvantageActorCritic():
                 state = next_state
                 total_reward += reward
                 steps += 1
+            
+            print(f"Episode {episode}: {reward}")
     
     def predict(self, observation):
         state_tensor = torch.FloatTensor(observation)
@@ -95,3 +99,12 @@ class AdvantageActorCritic():
         action = dist.sample()
         action = torch.tanh(action)
         return action.detach().numpy()
+
+class AdvantageActorCriticStableBaseline:
+   def __init__(self, env, total_timesteps):
+       self.model = A2C("MlpPolicy", env, verbose=1)
+       self.model.learn(total_timesteps=total_timesteps)
+  
+   def predict(self, obs):
+       action, _ = self.model.predict(obs)
+       return action

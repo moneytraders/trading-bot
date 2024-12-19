@@ -1,6 +1,6 @@
+from a2c_stock_trading import AdvantageActorCritic, AdvantageActorCriticStableBaseline
 from stock_trading_visualizer import StockTradingVisualizer
 from stable_baselines3.common.vec_env import DummyVecEnv
-from a2c_stock_trading import AdvantageActorCritic
 from stock_data_pipeline import StockDataPipeline
 from stock_trading_env import StockTradingEnv
 from datetime import datetime, timedelta
@@ -9,19 +9,13 @@ import json
 
 def load_config(config_path="config.json"):
     with open(config_path, "r") as file:
-        config = json.load(file)
-    return config
+        return json.load(file)
 
 def prepare_stock_data(tickers, lookback_years):
     start_date = (datetime.now() - timedelta(days=365 * lookback_years)).strftime("%Y-%m-%d")
     end_date = datetime.now().strftime("%Y-%m-%d")
 
-    pipeline = StockDataPipeline(
-        tickers=tickers,
-        start_date=start_date,
-        end_date=end_date,
-        save_processed=True,
-    )
+    pipeline = StockDataPipeline(tickers=tickers, start_date=start_date, end_date=end_date, save_processed=True)
     return pipeline.run()
 
 def create_env(stock_data, initial_balance):
@@ -36,13 +30,12 @@ def test_agent(env, agent, stock_data, n_tests=1000, visualize=False):
     }
 
     obs = env.reset()
-
-    for i in range(n_tests):
-        metrics['steps'].append(i)
+    
+    for step in range(n_tests):
+        metrics['steps'].append(step)
         action = agent.predict(obs)
-            
         obs, rewards, done, info = env.step(action)
-        
+
         if visualize:
             env.render()
 
@@ -54,17 +47,14 @@ def test_agent(env, agent, stock_data, n_tests=1000, visualize=False):
         metrics['net_worths'].append(net_worths)
 
         for ticker in stock_data.keys():
-            if ticker in shares_held:
-                metrics['shares_held'][ticker].append(shares_held[ticker])
-            else:
-                metrics['shares_held'][ticker].append(0)
+            metrics['shares_held'][ticker].append(shares_held.get(ticker, 0))
 
         if done:
             obs = env.reset()
             
     return metrics
 
-def train_and_evaluate_agents(env, agents, training_data, n_tests):
+def test_and_visualize_agents(env, agents, training_data, n_tests):
     metrics = {}
 
     for agent_name, agent in agents.items():
@@ -80,14 +70,23 @@ def visualize_results(metrics):
 
     StockTradingVisualizer.visualize_multiple_portfolio_net_worth(steps, net_worths, list(metrics.keys()))
 
+def get_agents(training_data, testing_data, config):
+    a2c = AdvantageActorCritic(StockTradingEnv(stock_data=training_data, initial_balance=config["initial_balance"]))
+    a2c.train(200, 2000)
+
+    stable_baselines_a2c = AdvantageActorCriticStableBaseline(create_env(testing_data, config["initial_balance"]), 10000)
+
+    return {
+        "A2C Agent": a2c,
+        "A2C Agent (stable_baselines3)": stable_baselines_a2c
+    }
+
 if __name__ == "__main__":
     config = load_config()
 
     training_data, validation_data, testing_data = prepare_stock_data(config["tickers"], config["lookback_years"])
-    env = create_env(training_data, config["initial_balance"])
 
-    agents = {
-        "A2C Agent": AdvantageActorCritic(env)
-    }
+    agents = get_agents(training_data, testing_data, config)
 
-    train_and_evaluate_agents(env, agents, training_data, config["n_tests"])
+    env = create_env(testing_data, config["initial_balance"])
+    test_and_visualize_agents(env, agents, testing_data, config["n_tests"])
