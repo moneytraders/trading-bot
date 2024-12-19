@@ -70,11 +70,11 @@ def visualize_results(metrics):
 
     StockTradingVisualizer.visualize_multiple_portfolio_net_worth(steps, net_worths, list(metrics.keys()))
 
-def get_agents(training_data, testing_data, config):
-    a2c = AdvantageActorCritic(StockTradingEnv(stock_data=training_data, initial_balance=config["initial_balance"]))
+def get_agents(stock_data, config):
+    a2c = AdvantageActorCritic(StockTradingEnv(stock_data=stock_data, initial_balance=config["initial_balance"]))
     a2c.train(200, 2000)
 
-    stable_baselines_a2c = AdvantageActorCriticStableBaseline(create_env(testing_data, config["initial_balance"]), 10000)
+    stable_baselines_a2c = AdvantageActorCriticStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
 
     return {
         "A2C Agent": a2c,
@@ -86,7 +86,7 @@ if __name__ == "__main__":
 
     training_data, validation_data, testing_data = prepare_stock_data(config["tickers"], config["lookback_years"])
 
-    agents = get_agents(training_data, testing_data, config)
+    agents = get_agents(training_data, config)
 
     env = create_env(testing_data, config["initial_balance"])
     test_and_visualize_agents(env, agents, testing_data, config["n_tests"])
