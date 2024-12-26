@@ -1,3 +1,5 @@
+a2c_weights
+ppo_weights
 processed-data
 __pycache__
 .venv

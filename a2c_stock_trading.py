@@ -4,15 +4,16 @@ from stable_baselines3 import A2C
 import torch.nn.functional as F
 import torch.nn as nn
 import torch
+import os
 
 # PolicyNetwork
 class Actor(nn.Module):
     def __init__(self, input_size, num_actions):
         super(Actor, self).__init__()
-        self.fc1 = nn.Linear(input_size, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3_mean = nn.Linear(64, num_actions)
-        self.fc3_std = nn.Linear(64, num_actions)
+        self.fc1 = nn.Linear(input_size, 64)
+        self.fc2 = nn.Linear(64, 32)
+        self.fc3_mean = nn.Linear(32, num_actions)
+        self.fc3_std = nn.Linear(32, num_actions)
         
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -25,9 +26,9 @@ class Actor(nn.Module):
 class Critic(nn.Module):
     def __init__(self, input_size):
         super(Critic, self).__init__()
-        self.fc1 = nn.Linear(input_size, 128)
-        self.fc2 = nn.Linear(128, 64)
-        self.fc3 = nn.Linear(64, 1)
+        self.fc1 = nn.Linear(input_size, 64)
+        self.fc2 = nn.Linear(64, 32)
+        self.fc3 = nn.Linear(32, 1)
 
     def forward(self, x):
         x = F.relu(self.fc1(x))
@@ -36,7 +37,7 @@ class Critic(nn.Module):
         return x
 
 class AdvantageActorCritic():
-    def __init__(self, env: StockTradingEnv, gamma=0.99, actor_lr=1e-3, critic_lr=1e-3):
+    def __init__(self, env: StockTradingEnv, gamma=0.95, actor_lr=1e-4, critic_lr=1e-4, save_dir="a2c_weights"):
         self.env = env
         self.gamma = gamma
         
@@ -49,6 +50,22 @@ class AdvantageActorCritic():
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=actor_lr)
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=critic_lr)
         
+        self.best_reward = -float('inf')
+        self.save_dir = save_dir
+        os.makedirs(save_dir, exist_ok=True)
+    
+    def save_models(self):
+        actor_path = os.path.join(self.save_dir, f"actor.pth")
+        critic_path = os.path.join(self.save_dir, f"critic.pth")
+        torch.save(self.actor.state_dict(), actor_path)
+        torch.save(self.critic.state_dict(), critic_path)
+
+    def load_best_models(self):
+        actor_path = os.path.join(self.save_dir, "actor.pth")
+        critic_path = os.path.join(self.save_dir, "critic.pth")
+        self.actor.load_state_dict(torch.load(actor_path, weights_only=True))
+        self.critic.load_state_dict(torch.load(critic_path, weights_only=True))
+    
     def train(self, episodes, max_steps):
         for episode in range(0, episodes):
             total_reward, steps, done = 0, 0, False 
@@ -60,8 +77,7 @@ class AdvantageActorCritic():
                 # pi(s) & take action
                 mean, std = self.actor(state_tensor)
                 dist = torch.distributions.Normal(mean, std)
-                action = dist.sample()
-                action = torch.tanh(action) # action between [-1, 1]
+                action = torch.tanh(dist.sample()) # action between [-1, 1]
                 
                 next_state, reward, done, _, _ = self.env.step(action.tolist())
                 
@@ -89,9 +105,15 @@ class AdvantageActorCritic():
                 state = next_state
                 total_reward += reward
                 steps += 1
+                
+            if total_reward > self.best_reward:
+                self.best_reward = total_reward
+                self.save_models() 
             
-            print(f"Episode {episode}: {reward}")
-    
+            print(f"Episode {episode}: {total_reward}")
+
+        self.load_best_models()
+        
     def predict(self, observation):
         state_tensor = torch.FloatTensor(observation)
         mean, std = self.actor(state_tensor)

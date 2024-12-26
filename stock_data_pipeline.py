@@ -13,9 +13,7 @@ class StockDataPipeline:
         self.end_date = end_date
         self.save_processed = save_processed
         
-        self.train = {}
-        self.validation = {}
-        self.test = {}
+        self.data = {}
         
         os.makedirs("data", exist_ok=True)
         os.makedirs("processed-data", exist_ok=True)
@@ -26,18 +24,6 @@ class StockDataPipeline:
             df.reset_index(inplace=True)
             df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
             df.to_csv(f"data/{ticker}.csv", index=False)
-
-    def __split_data(self, train_ratio=0.7, val_ratio=0.2):
-        for ticker in self.tickers:
-            df = pd.read_csv(f"data/{ticker}.csv", index_col="Date", parse_dates=True)
-            df = df.sort_index()
-            
-            train_split = int(len(df) * train_ratio)
-            val_split = int(len(df) * (train_ratio + val_ratio))
-            
-            self.train[ticker] = df[:train_split]
-            self.validation[ticker] = df[train_split:val_split]
-            self.test[ticker] = df[val_split:]
 
     def __calculate_rsi(self, df, window=14):
         """Calculates the Relative Strength Index (RSI)"""
@@ -92,24 +78,19 @@ class StockDataPipeline:
 
     def __process_data(self):
         for ticker in self.tickers:
-            self.train[ticker] = self.__add_technical_indicators(self.train[ticker])
-            self.validation[ticker] = self.__add_technical_indicators(self.validation[ticker])
-            self.test[ticker] = self.__add_technical_indicators(self.test[ticker])
+            df = pd.read_csv(f"data/{ticker}.csv", index_col="Date", parse_dates=True)
+            df = df.sort_index()
+            self.data[ticker] = self.__add_technical_indicators(df)  # Renamed here too
 
         if self.save_processed:
             self.__save_data()
 
     def __save_data(self):
-        for ticker, df in self.train.items():
+        for ticker, df in self.data.items():
             df.to_csv(f"processed-data/{ticker}_train.csv", index=False)
-        for ticker, df in self.validation.items():
-            df.to_csv(f"processed-data/{ticker}_validation.csv", index=False)
-        for ticker, df in self.test.items():
-            df.to_csv(f"processed-data/{ticker}_test.csv", index=False)
 
     def run(self):
         self.__fetch_data()
-        self.__split_data()
         self.__process_data()
         
-        return self.train, self.validation, self.test
+        return self.data

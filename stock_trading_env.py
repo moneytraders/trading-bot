@@ -1,11 +1,10 @@
 from gymnasium import spaces
-
 import gymnasium as gym
 import pandas as pd
 import numpy as np
 
 class StockTradingEnv(gym.Env):
-    def __init__(self, stock_data, initial_balance=10000):
+    def __init__(self, stock_data, initial_balance=10000, transaction_cost_percent=0.005):
         super(StockTradingEnv, self).__init__()
         
         self.stock_data = {ticker: df for ticker, df in stock_data.items() if not df.empty}
@@ -38,6 +37,7 @@ class StockTradingEnv(gym.Env):
         self.total_shares_sold = {ticker: 0 for ticker in self.tickers}
         self.total_sales_value = {ticker: 0 for ticker in self.tickers}
         
+        self.transaction_cost_percent = transaction_cost_percent
         self.current_step = 0
         
         """ 
@@ -91,12 +91,14 @@ class StockTradingEnv(gym.Env):
             if action > 0:  # Buy
                 shares_to_buy = int(self.balance * action / current_prices[ticker])
                 cost = shares_to_buy * current_prices[ticker]
-                self.balance -= cost
+                transaction_cost = cost * self.transaction_cost_percent
+                self.balance -= (cost + transaction_cost)  # Subtract cost + transaction cost
                 self.shares_held[ticker] += shares_to_buy
             elif action < 0:  # Sell
                 shares_to_sell = int(self.shares_held[ticker] * abs(action))
                 sale = shares_to_sell * current_prices[ticker]
-                self.balance += sale
+                transaction_cost = sale * self.transaction_cost_percent
+                self.balance += (sale - transaction_cost)  # Add sale value - transaction cost
                 self.shares_held[ticker] -= shares_to_sell
                 self.total_shares_sold[ticker] += shares_to_sell
                 self.total_sales_value[ticker] += sale
