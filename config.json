@@ -1,11 +1,11 @@
 {
     "tickers": [
-      "MMM", "AXP", "AAPL", "BA", "CAT", "CVX", "CSCO", "KO", "DIS", "DOW",
+      "MMM", "AXP", "AAPL", "BA", "CAT", "CVX", "CSCO", "KO", "DIS",
       "GS", "HD", "IBM", "INTC", "JNJ", "JPM", "MCD", "MRK", "MSFT", "NKE",
       "PFE", "PG", "TRV", "UNH", "VZ", "V", "WBA", "WMT", "XOM"
     ],
     "start_date": "2009-01-01",
-    "end_date": "2020-05-08",
+    "end_date": "2015-05-08",
     "initial_balance": 10000,
     "n_tests": 1000
 }

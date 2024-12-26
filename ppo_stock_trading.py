@@ -99,8 +99,7 @@ class ProximalPolicyOptimization:
                 epsilon=0.2,
                 k_epochs=10,
                 entropy_cf=0.01,
-                max_grad_norm=1, 
-                save_dir="ppo_weights"):
+                max_grad_norm=1):
         self.env = env
         self.lmbda = lmbda
         self.gamma = gamma
@@ -117,22 +116,6 @@ class ProximalPolicyOptimization:
 
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=actor_lr)
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=critic_lr)
-
-        self.best_reward = -float('inf')
-        self.save_dir = save_dir
-        os.makedirs(save_dir, exist_ok=True)
-    
-    def save_models(self):
-        actor_path = os.path.join(self.save_dir, f"actor.pth")
-        critic_path = os.path.join(self.save_dir, f"critic.pth")
-        torch.save(self.actor.state_dict(), actor_path)
-        torch.save(self.critic.state_dict(), critic_path)
-
-    def load_best_models(self):
-        actor_path = os.path.join(self.save_dir, "actor.pth")
-        critic_path = os.path.join(self.save_dir, "critic.pth")
-        self.actor.load_state_dict(torch.load(actor_path, weights_only=True))
-        self.critic.load_state_dict(torch.load(critic_path, weights_only=True))
                 
     def train_critic_network(self, observations, returns):
         for _ in range(self.k_epochs):
@@ -229,13 +212,7 @@ class ProximalPolicyOptimization:
             self.train_actor_network(exp_tensors["observations"], exp_tensors["actions"], exp_tensors["log_probs"], exp_tensors["gaes"])
             self.train_critic_network(exp_tensors["observations"], exp_tensors["returns"])
             
-            if cumulative_reward > self.best_reward:
-                self.best_reward = cumulative_reward
-                self.save_models()
-            
             print(f"Episode {episode}: {cumulative_reward}")
-
-        self.load_best_models()
     
     def predict(self, observation):
         state_tensor = torch.FloatTensor(observation)

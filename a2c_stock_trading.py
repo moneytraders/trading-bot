@@ -37,7 +37,7 @@ class Critic(nn.Module):
         return x
 
 class AdvantageActorCritic():
-    def __init__(self, env: StockTradingEnv, gamma=0.95, actor_lr=1e-4, critic_lr=1e-4, save_dir="a2c_weights"):
+    def __init__(self, env: StockTradingEnv, gamma=0.95, actor_lr=1e-4, critic_lr=1e-4):
         self.env = env
         self.gamma = gamma
         
@@ -49,22 +49,6 @@ class AdvantageActorCritic():
         
         self.actor_optimizer = torch.optim.Adam(self.actor.parameters(), lr=actor_lr)
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=critic_lr)
-        
-        self.best_reward = -float('inf')
-        self.save_dir = save_dir
-        os.makedirs(save_dir, exist_ok=True)
-    
-    def save_models(self):
-        actor_path = os.path.join(self.save_dir, f"actor.pth")
-        critic_path = os.path.join(self.save_dir, f"critic.pth")
-        torch.save(self.actor.state_dict(), actor_path)
-        torch.save(self.critic.state_dict(), critic_path)
-
-    def load_best_models(self):
-        actor_path = os.path.join(self.save_dir, "actor.pth")
-        critic_path = os.path.join(self.save_dir, "critic.pth")
-        self.actor.load_state_dict(torch.load(actor_path, weights_only=True))
-        self.critic.load_state_dict(torch.load(critic_path, weights_only=True))
     
     def train(self, episodes, max_steps):
         for episode in range(0, episodes):
@@ -106,14 +90,8 @@ class AdvantageActorCritic():
                 total_reward += reward
                 steps += 1
                 
-            if total_reward > self.best_reward:
-                self.best_reward = total_reward
-                self.save_models() 
-            
             print(f"Episode {episode}: {total_reward}")
 
-        self.load_best_models()
-        
     def predict(self, observation):
         state_tensor = torch.FloatTensor(observation)
         mean, std = self.actor(state_tensor)
