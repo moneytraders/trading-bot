@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 
 import json
 
-EPOCHS = 250
+EPOCHS = 50
 MAX_STEPS = 2000
 
 def load_config(config_path="config.json"):

@@ -80,7 +80,7 @@ class StockDataPipeline:
         for ticker in self.tickers:
             df = pd.read_csv(f"data/{ticker}.csv", index_col="Date", parse_dates=True)
             df = df.sort_index()
-            self.data[ticker] = self.__add_technical_indicators(df)  # Renamed here too
+            self.data[ticker] = self.__add_technical_indicators(df)
 
         if self.save_processed:
             self.__save_data()
