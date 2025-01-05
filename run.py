@@ -23,7 +23,7 @@ def prepare_stock_data(tickers, start_date, end_date):
 def create_env(stock_data, initial_balance):
     return DummyVecEnv([lambda: StockTradingEnv(stock_data=stock_data, initial_balance=initial_balance)])
 
-def test_agent(env, agent, stock_data, n_tests=1000, visualize=True):
+def test_agent(env, agent, stock_data, n_tests=1000, visualize=False):
     metrics = {
         'steps': [],
         'balances': [],
@@ -74,26 +74,26 @@ def visualize_results(metrics):
     StockTradingVisualizer.visualize_multiple_portfolio_net_worth(steps, net_worths, list(metrics.keys()))
 
 def get_agents(stock_data, config): 
-    # ppo = ProximalPolicyOptimization(StockTradingEnv(stock_data=stock_data, initial_balance=config["initial_balance"]))
-    # ppo.train(EPOCHS, MAX_STEPS)
+    ppo = ProximalPolicyOptimization(StockTradingEnv(stock_data=stock_data, initial_balance=config["initial_balance"]))
+    ppo.train(EPOCHS, MAX_STEPS)
     
-    # a2c = AdvantageActorCritic(StockTradingEnv(stock_data=stock_data, initial_balance=config["initial_balance"]))
-    # a2c.train(EPOCHS, MAX_STEPS)
+    a2c = AdvantageActorCritic(StockTradingEnv(stock_data=stock_data, initial_balance=config["initial_balance"]))
+    a2c.train(EPOCHS, MAX_STEPS)
 
     ddpg = DeepDeterministicPolicyGradient(StockTradingEnv(stock_data=stock_data, initial_balance=config["initial_balance"]))
     ddpg.train(EPOCHS, MAX_STEPS)
 
-    # stable_baselines_a2c = AdvantageActorCriticStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
-    # stable_baselines_ppo = ProximalPolicyOptimizationStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
+    stable_baselines_a2c = AdvantageActorCriticStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
+    stable_baselines_ppo = ProximalPolicyOptimizationStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
     stable_baselines_ddpg = DeepDeterministicPolicyGradientStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
     
     return {
-        # "A2C Agent": a2c,
-        # "PPO Agent": ppo,
+        "A2C Agent": a2c,
+        "PPO Agent": ppo,
         "DDPQ Agent": ddpg,
         
-        # "A2C Agent (stable_baselines3)": stable_baselines_a2c,
-        # "PPO Agent (stable_baselines3)": stable_baselines_ppo,
+        "A2C Agent (stable_baselines3)": stable_baselines_a2c,
+        "PPO Agent (stable_baselines3)": stable_baselines_ppo,
         "DDPG Agent (stable_baselines3)": stable_baselines_ddpg,
     }
 
