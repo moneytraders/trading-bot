@@ -1,0 +1,15 @@
+trading:
+  replay_memory_size: 10000
+  minibatch_size: 200
+  epsilon_init: 1
+  epsilon_decay: 0.85
+  epsilon_min: 0.02
+  network_sync_rate: 1000
+  learning_rate_optimizer: 0.00001
+  discount_factor: 0.99
+  positions_min: -1
+  positions_max: 1
+  positions_count: 15
+  enable_double_dqn: True
+  window_size: 40
+  optimize_every_steps: 500
