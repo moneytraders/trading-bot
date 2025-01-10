@@ -49,3 +49,24 @@ def load_data(path: str) -> pd.DataFrame:
 
     df = df.dropna().drop_duplicates()
     return df
+
+
+def load_hyperparameters(obj, hyperparameters):
+    obj.replay_memory_size = hyperparameters["replay_memory_size"]
+    obj.minibatch_size = hyperparameters["minibatch_size"]
+    obj.epsilon_init = hyperparameters["epsilon_init"]
+    obj.epsilon_decay = hyperparameters["epsilon_decay"]
+    obj.epsilon_min = hyperparameters["epsilon_min"]
+    obj.network_sync_rate = hyperparameters["network_sync_rate"]
+    obj.discount_factor = hyperparameters["discount_factor"]
+    obj.learning_rate_optimizer = hyperparameters["learning_rate_optimizer"]
+    obj.positions_min = hyperparameters["positions_min"]
+    obj.positions_max = hyperparameters["positions_max"]
+    obj.positions_count = hyperparameters["positions_count"]
+    obj.enable_double_dqn = hyperparameters["enable_double_dqn"]
+    obj.window_size = hyperparameters["window_size"]
+    obj.optimize_every_steps = hyperparameters["optimize_every_steps"]
+    obj.portfolio_initial_value = hyperparameters["portfolio_initial_value"]
+    obj.data_bucket = hyperparameters["data_bucket"]
+    obj.is_training = hyperparameters["is_training"]
+    obj.model_path = hyperparameters["model_path"]
