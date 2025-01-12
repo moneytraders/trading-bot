@@ -155,11 +155,11 @@ class ReplayBuffer:
         batch = random.sample(self.buffer, batch_size)
         states, actions, rewards, next_states, dones = zip(*batch)
         return (
-            torch.FloatTensor(states),
-            torch.FloatTensor(actions),
-            torch.FloatTensor(rewards).unsqueeze(1),
-            torch.FloatTensor(next_states),
-            torch.FloatTensor(dones).unsqueeze(1),
+            torch.FloatTensor(np.array(states)),
+            torch.FloatTensor(np.array(actions)),
+            torch.FloatTensor(np.array(rewards)).unsqueeze(1),
+            torch.FloatTensor(np.array(next_states)),
+            torch.FloatTensor(np.array(dones)).unsqueeze(1),
         )
     
     def size(self):
@@ -173,4 +173,4 @@ class DeepDeterministicPolicyGradientStableBaseline:
     def predict(self, obs):
        action, _ = self.model.predict(obs)
        return action
-    
+
