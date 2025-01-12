@@ -88,8 +88,9 @@ def get_agents(stock_data, config, save=False):
 
 if __name__ == "__main__":
     config = load_config()
-
-    data = prepare_stock_data([config["target_ticker"]], config["start_date"], config["end_date"])
-
-    agents = get_agents(data, config, save=True)
-    test_and_visualize_agents(agents, data, config["n_tests"])
+    
+    data_train = prepare_stock_data([config["target_ticker"]], config["start_date"], config["end_date"])
+    data_test = prepare_stock_data([config["target_ticker"]], config["start_val_date"], config["end_val_date"])
+    
+    agents = get_agents(data_train, config, save=True)
+    test_and_visualize_agents(agents, data_test, data_test[config["target_ticker"]].shape[0] - 3)
