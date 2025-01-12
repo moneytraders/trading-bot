@@ -5,8 +5,10 @@
       "PFE", "PG", "TRV", "UNH", "VZ", "V", "WBA", "WMT", "XOM"
     ],
     "start_date": "2009-01-01",
-    "end_date": "2015-05-08",
+    "end_date": "2014-05-08",
     "initial_balance": 10000,
     "n_tests": 1000,
-    "target_ticker": "CSCO"
+    "target_ticker": "CSCO",
+    "start_val_date": "2014-05-09",
+    "end_val_date": "2015-05-08"
 }

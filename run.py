@@ -83,9 +83,9 @@ def get_agents(stock_data, config):
     ddpg = DeepDeterministicPolicyGradient(StockTradingEnv(stock_data=stock_data, initial_balance=config["initial_balance"]))
     ddpg.train(EPOCHS, MAX_STEPS)
 
-    stable_baselines_a2c = AdvantageActorCriticStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
-    stable_baselines_ppo = ProximalPolicyOptimizationStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
-    stable_baselines_ddpg = DeepDeterministicPolicyGradientStableBaseline(create_env(stock_data, config["initial_balance"]), 10000)
+    stable_baselines_a2c = AdvantageActorCriticStableBaseline(create_env(stock_data, config["initial_balance"]), MAX_STEPS * EPOCHS)
+    stable_baselines_ppo = ProximalPolicyOptimizationStableBaseline(create_env(stock_data, config["initial_balance"]), MAX_STEPS * EPOCHS)
+    stable_baselines_ddpg = DeepDeterministicPolicyGradientStableBaseline(create_env(stock_data, config["initial_balance"]), MAX_STEPS * EPOCHS)
     
     return {
         "A2C Agent": a2c,
@@ -100,7 +100,8 @@ def get_agents(stock_data, config):
 if __name__ == "__main__":
     config = load_config()
 
-    data = prepare_stock_data(config["tickers"], config["start_date"], config["end_date"])
+    data_train = prepare_stock_data(config["tickers"], config["start_date"], config["end_date"])
+    data_test = prepare_stock_data(config["tickers"], config["start_val_date"], config["end_val_date"])
     
-    agents = get_agents(data, config)
-    test_and_visualize_agents(agents, data, config["n_tests"])
+    agents = get_agents(data_train, config)
+    test_and_visualize_agents(agents, data_test, data_test[config["target_ticker"]].shape[0] - 3)
