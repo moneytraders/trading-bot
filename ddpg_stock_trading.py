@@ -1,6 +1,7 @@
 from stock_trading_env import StockTradingEnv
 from stable_baselines3 import DDPG
 from stable_baselines3.common.noise import NormalActionNoise
+from stable_baselines3 import A2C
 
 import torch.nn.functional as F
 import torch.nn as nn
@@ -168,6 +169,15 @@ class ReplayBuffer:
 class DeepDeterministicPolicyGradientStableBaseline:
     def __init__(self, env, total_timesteps):
         self.model = DDPG("MlpPolicy", env, verbose=1)
+        self.model.learn(total_timesteps=total_timesteps)
+
+    def predict(self, obs):
+       action, _ = self.model.predict(obs)
+       return action
+
+class AdvantageActorCriticStableBaseline:
+    def __init__(self, env, total_timesteps, device='cpu'):
+        self.model = A2C("MlpPolicy", env, verbose=1, device=device)
         self.model.learn(total_timesteps=total_timesteps)
 
     def predict(self, obs):
