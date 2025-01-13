@@ -20,11 +20,18 @@ class StockDataPipeline:
 
     def __fetch_data(self):
         for ticker in self.tickers:
-            if not os.path.exists(f"data/{ticker}.csv"):
-                df = yf.download(ticker, start=self.start_date, end=self.end_date)
-                df.reset_index(inplace=True)
-                df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
-                df.to_csv(f"data/{ticker}.csv", index=False)
+            file_path = f"data/{ticker}.csv"
+            if os.path.exists(file_path):
+                df_existing = pd.read_csv(file_path, index_col="Date", parse_dates=True)
+
+                if df_existing.index.min() <= pd.to_datetime(self.start_date) + timedelta(days=1) and df_existing.index.max() >= pd.to_datetime(self.end_date) - timedelta(days=1):
+                    print(f"Data for {ticker} already exists for the specified timeframe.")
+                    continue
+        
+            df = yf.download(ticker, start=self.start_date, end=self.end_date)
+            df.reset_index(inplace=True)
+            df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
+            df.to_csv(f"data/{ticker}.csv", index=False)
 
     def __calculate_rsi(self, df, window=14):
         """Calculates the Relative Strength Index (RSI)"""
