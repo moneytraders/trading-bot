@@ -20,10 +20,11 @@ class StockDataPipeline:
 
     def __fetch_data(self):
         for ticker in self.tickers:
-            df = yf.download(ticker, start=self.start_date, end=self.end_date)
-            df.reset_index(inplace=True)
-            df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
-            df.to_csv(f"data/{ticker}.csv", index=False)
+            if not os.path.exists(f"data/{ticker}.csv"):
+                df = yf.download(ticker, start=self.start_date, end=self.end_date)
+                df.reset_index(inplace=True)
+                df.columns = [col[0] if isinstance(col, tuple) else col for col in df.columns]
+                df.to_csv(f"data/{ticker}.csv", index=False)
 
     def __calculate_rsi(self, df, window=14):
         """Calculates the Relative Strength Index (RSI)"""
