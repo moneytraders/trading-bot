@@ -1,4 +1,6 @@
 from gym_trading_env.renderer import Renderer
 
-renderer = Renderer(render_logs_dir="render_logs")
+path_to_render_dir = "render_stable/"
+
+renderer = Renderer(path_to_render_dir)
 renderer.run()

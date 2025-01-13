@@ -8,44 +8,22 @@ def load_data(path: str) -> pd.DataFrame:
     Load and preprocess trading data.
     """
     df = pd.read_csv(path, header=0)
-    df['date'] = pd.to_datetime(df['date'], unit='ms')
-    df.set_index('date', inplace=True)
+    df["date"] = pd.to_datetime(df["date"], unit="ms")
+    df.set_index("date", inplace=True)
 
     df = df.sort_index().dropna().drop_duplicates()
 
-    # Standardize volume and number of trades
-    df["feature_volume"] = (df['volume'] -
-                            df['volume'].mean()) / df['volume'].std()
-    df["feature_trades"] = (df['nrOfTrades'] -
-                            df['nrOfTrades'].mean()) / df['nrOfTrades'].std()
+    df["feature_close"] = df["close"].pct_change()
+    df["feature_high"] = df["high"].pct_change()
+    df["feature_low"] = df["low"].pct_change()
+    df["feature_open"] = df["open"].pct_change()
 
-    # Log returns for prices
-    df["feature_close_log_return"] = np.log(df["close"] / df["close"].shift(1))
-    df["feature_high_log_return"] = np.log(df["high"] / df["high"].shift(1))
-    df["feature_low_log_return"] = np.log(df["low"] / df["low"].shift(1))
-    df["feature_open_log_return"] = np.log(df["open"] / df["open"].shift(1))
+    df["feature_ema15"] = talib.EMA(df["close"], timeperiod=15).pct_change()
+    df["feature_ema30"] = talib.EMA(df["close"], timeperiod=30).pct_change()
+    df["feature_ema60"] = talib.EMA(df["close"], timeperiod=60).pct_change()
+    df["feature_ema90"] = talib.EMA(df["close"], timeperiod=90).pct_change()
 
-    # Rolling mean and standard deviation for volatility and trend analysis
-    df["feature_rolling_mean_30"] = df["close"].rolling(window=30).mean()
-    df["feature_rolling_std_30"] = df["close"].rolling(window=30).std()
-    df["feature_rolling_mean_60"] = df["close"].rolling(window=60).mean()
-    df["feature_rolling_std_60"] = df["close"].rolling(window=60).std()
-
-    # Lagged features for trend prediction
-    df["feature_lag_close"] = df["close"].shift(1)
-    df["feature_lag_high"] = df["high"].shift(1)
-    df["feature_lag_low"] = df["low"].shift(1)
-    df["feature_lag_open"] = df["open"].shift(1)
-
-    # TA-Lib indicators
-    df['feature_macd'], df['feature_macd_signal'], _ = talib.MACD(df['close'])
-    df['feature_rsi'] = talib.RSI(df['close'], timeperiod=14)
-    df['feature_upperband'], df['feature_middleband'], df[
-        'feature_lowerband'] = talib.BBANDS(df['close'], timeperiod=20)
-    df['feature_atr'] = talib.ATR(df['high'],
-                                  df['low'],
-                                  df['close'],
-                                  timeperiod=14)
+    df["feature_rsi"] = talib.RSI(df["close"], timeperiod=14) / 100
 
     df = df.dropna().drop_duplicates()
     return df
@@ -63,10 +41,10 @@ def load_hyperparameters(obj, hyperparameters):
     obj.positions_min = hyperparameters["positions_min"]
     obj.positions_max = hyperparameters["positions_max"]
     obj.positions_count = hyperparameters["positions_count"]
-    obj.enable_double_dqn = hyperparameters["enable_double_dqn"]
     obj.window_size = hyperparameters["window_size"]
     obj.optimize_every_steps = hyperparameters["optimize_every_steps"]
     obj.portfolio_initial_value = hyperparameters["portfolio_initial_value"]
     obj.data_bucket = hyperparameters["data_bucket"]
     obj.is_training = hyperparameters["is_training"]
     obj.model_path = hyperparameters["model_path"]
+    obj.render_dir = hyperparameters["render_dir"]

@@ -1,21 +1,20 @@
 trading:
-  replay_memory_size: 10000
-  minibatch_size: 200
-  epsilon_init: 0.9999
-  epsilon_decay: 0.90
+  is_training: false
+  model_path: null
+  # model_path: "models/best_model_0.64.pth"
+  data_bucket: 22
+  discount_factor: 0.8
+  epsilon_decay: 0.9
+  epsilon_init: 0.3
   epsilon_min: 0.02
-  network_sync_rate: 5000
   learning_rate_optimizer: 0.0001
-  discount_factor: 0.99
-  positions_min: -2
-  positions_max: 2
-  positions_count: 40
-  enable_double_dqn: True
-  window_size: 50
+  minibatch_size: 256
+  network_sync_rate: 5000
   optimize_every_steps: 500
   portfolio_initial_value: 10000
-  data_bucket: 0
-  is_training: True
-  model_path: null
-  # model_path: "models/best_model_342.93.pth"
-  
+  positions_count: 30
+  positions_max: 2
+  positions_min: -2
+  render_dir: renders
+  replay_memory_size: 5000
+  window_size: 30
