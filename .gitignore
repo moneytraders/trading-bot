@@ -6,4 +6,5 @@ __pycache__
 data
 .idea
 .vscode
+data_binance/
 trading-bot.code-workspace
