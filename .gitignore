@@ -3,6 +3,7 @@ ppo_weights
 processed-data
 __pycache__
 .venv
+venv
 data
 .idea
 .vscode
